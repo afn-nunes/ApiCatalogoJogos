@@ -1,11 +1,11 @@
-﻿using ApiCatalogoJogos.InputModel;
+﻿using ApiCatalogoJogos.Exceptions;
+using ApiCatalogoJogos.InputModel;
 using ApiCatalogoJogos.Services;
 using ApiCatalogoJogos.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ApiCatalogoJogos.Controllers.V1
@@ -30,15 +30,16 @@ namespace ApiCatalogoJogos.Controllers.V1
         {
             var jogos = await _jogoService.Obter(pagina, quantidade);
 
-            if (jogos.Count() == 0)
+            if (jogos.Count == 0)
                 return NoContent();
 
             return Ok(jogos);
         }
 
         /// <summary>
-        /// Método para retornar um jogo específico pelo id
+        /// Obtem um jogo através do ID
         /// </summary>
+        /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<JogoViewModel>> Obter([FromRoute] Guid id)
@@ -52,9 +53,9 @@ namespace ApiCatalogoJogos.Controllers.V1
         }
 
         /// <summary>
-        /// Método para inserir um novo jogo
+        /// Inserir um jogo pelo objeto
         /// </summary>
-        /// <param name="jogo"></param>
+        /// <param name="jogoInputModel"></param>
         /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<JogoViewModel>> Inserir([FromBody] JogoInputModel jogoInputModel)
@@ -64,19 +65,19 @@ namespace ApiCatalogoJogos.Controllers.V1
                 var jogo = await _jogoService.Inserir(jogoInputModel);
                 return Created("", jogo);
             }
-            catch (Exception)
+            catch (JogoJaCadastradoException ex)
             {
 
-                return UnprocessableEntity("Já existe um jogo com este nome para esta produtora");
+                return UnprocessableEntity(ex.Message);
             }
             
         }
 
         /// <summary>
-        /// Método para atualizar informações de um jogo cadastrado
+        /// Atualiza as informações de um jogo pelo id e retorna o jogo
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="jogo"></param>
+        /// <param name="jogoInputModel"></param>
         /// <returns></returns>
         [HttpPut("{id:guid}")]
         public async Task<ActionResult> Atualizar([FromRoute] Guid id, [FromBody] JogoInputModel jogoInputModel)
@@ -86,15 +87,15 @@ namespace ApiCatalogoJogos.Controllers.V1
                 await _jogoService.Atualizar(id, jogoInputModel);
                 return Ok();
             }
-            catch (Exception)
+            catch (JogoNaoCadastradoException ex)
             {
-                return NotFound("Jogo não encontrado");
+                return NotFound(ex.Message);
             }
             
         }
 
         /// <summary>
-        /// Método para atualizar uma informação específica de um jogo
+        /// Atualiza uma informação específica do jogo pelo preço
         /// </summary>
         /// <param name="id"></param>
         /// <param name="preco"></param>
@@ -107,18 +108,19 @@ namespace ApiCatalogoJogos.Controllers.V1
                 await _jogoService.Atualizar(id, preco);
                 return Ok();
             }
-            catch (Exception)
+            catch (JogoNaoCadastradoException ex)
             {
-                return NotFound("Jogo não encontrado");
+                return NotFound(ex.Message);
             }
 
         }
 
         /// <summary>
-        /// Método para remover um jogo pelo Id
+        ///  Remove um jogo pelo Id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [HttpDelete]
         public async Task<ActionResult> Remover([FromRoute] Guid id)
         {
             try
@@ -126,9 +128,9 @@ namespace ApiCatalogoJogos.Controllers.V1
                 await _jogoService.Remover(id);
                 return Ok();
             }
-            catch (Exception)
+            catch (JogoNaoCadastradoException ex)
             {
-                return NotFound("Jogo não encontrado");
+                return NotFound(ex.Message);
             }
 
         }
