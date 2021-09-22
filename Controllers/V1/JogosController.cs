@@ -49,7 +49,7 @@ namespace ApiCatalogoJogos.Controllers.V1
             if (jogo == null)
                 return NoContent();
 
-            return Ok();
+            return Ok(jogo);
         }
 
         /// <summary>

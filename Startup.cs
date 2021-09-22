@@ -1,5 +1,7 @@
+using ApiCatalogoJogos.Middleware;
 using ApiCatalogoJogos.Repositories;
 using ApiCatalogoJogos.Services;
+using ExemploApiCatalogoJogos.Controllers.V1;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +25,13 @@ namespace ApiCatalogoJogos
         {
             services.AddScoped<IJogoService, JogoService>();
             services.AddScoped<IJogoRepository, JogoSQLServerRepository>();
+
+            #region CicloDeVida
+
+            services.AddSingleton<IExemploSingleton, ExemploCicloDeVida>();
+            services.AddScoped<IExemploScoped, ExemploCicloDeVida>();
+            services.AddTransient<IExemploTransient, ExemploCicloDeVida>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -41,7 +50,7 @@ namespace ApiCatalogoJogos
             }
 
             app.UseHttpsRedirection();
-
+            app.UseMiddleware<ExceptionMiddleware>();
             app.UseRouting();
 
             app.UseAuthorization();
